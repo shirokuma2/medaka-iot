@@ -7,6 +7,8 @@ import traceback
 # standard
 from datetime import datetime, timedelta, timezone
 from typing import Callable, List
+import inspect
+from logging import getLogger, DEBUG, INFO
 
 import firebase_admin
 import google.auth
@@ -22,11 +24,28 @@ from tqdm import tqdm
 STOP_MAX_ATTEMPT_NUMBER = 1
 WAIT_FIXED = 1000
 
-
 cred = credentials.ApplicationDefault()
 initialize_app(cred, options={'projectId': 'exponential-awiiin'})
 db = firestore.client()
 service_account = os.environ["service_account"]
+
+logger = getLogger('uvicorn')
+logger.setLevel(INFO)
+
+
+def log(types: str = "debug", **kwargs):
+    """
+    types: "info" or "debug" or "error"
+    """
+    # 現在の行番号を取得
+    log_detail = {"line": inspect.currentframe().f_back.f_lineno}
+    log_detail.update(kwargs)
+    logs = {
+        "info": lambda x: logger.info(str(x)),
+        "debug": lambda x: logger.debug(str(x)),
+        "error": lambda x: logger.error(str(x))
+    }
+    logs[types](log_detail)
 
 
 class Utility:
@@ -102,11 +121,14 @@ class Utility:
         https://stackoverflow.com/questions/49542974/bigquery-python-schemafield-with-array-of-structs
         """
         schema = [bigquery.SchemaField(k, v) for k, v in schema_dict.items()]
+        log(schema=schema)
         job_config = bigquery.LoadJobConfig(
             schema=schema,
             time_partitioning=bigquery.TimePartitioning(type_=bigquery.TimePartitioningType.HOUR, field=dt_col)
         )
+        print(1)
         self.bq.load_table_from_dataframe(df, table, job_config=job_config)
+        print(2)
         return "success"
 
     @staticmethod
@@ -175,6 +197,7 @@ class Utility:
             "description": f"traceback: {error['traceback']}, header: {header}"
         }
         requests.post(url, data=send_data)
+
 
 #
 # @retry(stop_max_attempt_number=STOP_MAX_ATTEMPT_NUMBER, wait_fixed=WAIT_FIXED)
