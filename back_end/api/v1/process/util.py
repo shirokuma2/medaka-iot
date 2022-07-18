@@ -218,3 +218,4 @@ def parallel(function: Callable, array: List[dict], n_jobs: int = -1, progress: 
     if progress:
         return Parallel(n_jobs=n_jobs)(delayed(function)(**prm) for prm in tqdm(array))
     return Parallel(n_jobs=n_jobs)(delayed(function)(**prm) for prm in array)
+
