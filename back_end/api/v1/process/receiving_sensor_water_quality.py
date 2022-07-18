@@ -15,7 +15,6 @@ def preprocess(params):
 def save(df):
     schema = {
         "timestamp": "TIMESTAMP",
-        "created_at": "STRING",
         "location": "STRING",
         "sensor": "STRING",
         "measurements": "FLOAT",

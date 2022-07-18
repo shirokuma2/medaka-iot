@@ -20,7 +20,6 @@ async def index():
 
 
 class RSWQ(BaseModel):
-    created_at: str
     location: str
     sensor: str
     measurements: float
